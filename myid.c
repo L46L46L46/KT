@@ -11,9 +11,9 @@ int main(int argc, char** argv)
 	char* uid_name;
 	int gid;
 	char* gid_name;
-	int groups = 100;	
+	int ngroups = 128;	
 
-	gid_t* list_groups = malloc(64 * sizeof(gid_t));
+	gid_t* list_groups = malloc(ngroups * sizeof(gid_t));
 
 	if (argc == 1)
 	{
@@ -26,22 +26,24 @@ int main(int argc, char** argv)
 		uid = (getpwnam(uid_name)) -> pw_uid;
 	}
 
-		gid_name = uid_name;
-		gid = (getgrnam(gid_name)) -> gr_gid;
-		getgrouplist (uid_name, getpwnam(uid_name) -> pw_gid, list_groups, &groups);
+	gid_name = uid_name;
+	gid = (getgrnam(gid_name)) -> gr_gid;
+	
+	getgrouplist (uid_name, getpwnam(uid_name) -> pw_gid, list_groups, &ngroups);
 
 	printf("uid=%d(%s) ", uid, uid_name);
 	printf("gid=%d(%s) ", gid, gid_name);
-	printf("group=%d(%s)", list_groups[0], getgrgid(list_groups[0]) -> gr_name);
+	printf("group=%d(%s)", *list_groups, getgrgid(*list_groups) -> gr_name);
 
-	for (int i = 1; i < groups; i++)
+	for (int i = 1; i < ngroups; i++)
 	{
-		if (i < groups)
+		if (i < ngroups)
 		{
 			printf(",");
 		}
-		printf("%d(%s)", list_groups[i], (char*) getgrgid(list_groups[i]) -> gr_name);
+		printf("%d(%s)", *(list_groups + i), getgrgid( *(list_groups + i) ) -> gr_name);
 	}
 	printf("\n");
+	free(list_groups);
 	return 0;
 }
