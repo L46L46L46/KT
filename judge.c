@@ -7,6 +7,7 @@
 #include <string.h>
 #include <errno.h>
 #include <unistd.h>
+#include <time.h>
 
 struct msgbuf
 {
@@ -16,6 +17,13 @@ struct msgbuf
 
 int runner (int i, int id, int n)
 {
+	struct timespec t1, t2;
+	if (clock_gettime(CLOCK_MONOTONIC, &t1) == -1)
+	{
+		printf("Gettime");
+		return errno;
+	}
+
 	struct msgbuf im_here;
 	im_here.type = 1;
 	im_here.msg = i;
@@ -73,6 +81,12 @@ int runner (int i, int id, int n)
 			return errno;
 		}
 		printf("		%d go home\n", i);
+		if (clock_gettime(CLOCK_MONOTONIC, &t2) == -1)
+		{
+			printf("Gettime : ");
+			return errno;
+		}
+		printf("Lifetime %d runner %ld.%ldms\n", i, (t2.tv_nsec - t1.tv_nsec)/1000000, (t2.tv_nsec - t1.tv_nsec)% 1000000);
 		return 0;
 	}
 	printf("RELEASE ME, PLEASE");
@@ -82,6 +96,12 @@ int runner (int i, int id, int n)
 int judge(int id, int n)
 {
 	struct msgbuf judge_instruction;
+	struct timespec t1, t2;
+	if (clock_gettime(CLOCK_MONOTONIC, &t1) == -1)
+	{
+		printf("Gettime");
+		return errno;
+	}
 	for (int i = 0; i < n; i++)
 	{
 		int rcv = msgrcv(id, &judge_instruction, sizeof(struct msgbuf), 0, 0);
@@ -114,6 +134,12 @@ int judge(int id, int n)
 	{
 		return errno;
 	}
+	if (clock_gettime(CLOCK_MONOTONIC, &t2) == -1)
+	{
+		printf("Gettime : ");
+		return errno;
+	}
+	printf("Lifetime judge %ld.%ldms\n", (t2.tv_nsec - t1.tv_nsec)/1000000, (t2.tv_nsec - t1.tv_nsec)% 1000000);
 	return 0;
 }
 
